@@ -16,7 +16,7 @@ def find(bid):
 
 @app.route("/books", methods=["GET"])
 def list_books():
-    n = int(request.args.get("limt", 100))
+    n = int(request.args.get("limit", 100))
     return jsonify(BOOKS[:n]), 200
 
 @app.route("/books/<int:bid>", methods=["GET"])
@@ -32,7 +32,7 @@ def create_book():
     body = request.get_json(silent=True) or {}
     t, a = body.get("title"), body.get("author")
     if not t or not a:
-        return {"error":"neet title + author"}, 400
+        return {"error":"need title + author"}, 400
     book = {"id":_next, "title":t, "author":a}
     _next += 1; BOOKS.append(book)
     return jsonify(book), 201, {"Location":f"/books/{book['id']}"}
