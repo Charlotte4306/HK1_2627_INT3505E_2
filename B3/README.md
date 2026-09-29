@@ -87,3 +87,84 @@
 </table>
 
 ---
+
+## 2. Lab 3
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="./images/lab3(1).png" width="350" alt="Lọc orders theo status">
+    </td>
+    <td align="center">
+      <img src="./images/lab3(2).png" width="350" alt="Giới hạn số orders trả về">
+    </td>
+  </tr> 
+  <tr>
+    <td width="50%">
+      <b>📝 Giải thích ảnh 1:</b><br>
+      Request <code>GET /orders?status=paid</code> lọc các đơn hàng có
+      trạng thái <code>paid</code>. Response trả về <code>200 OK</code>;
+      danh sách <code>data</code> chỉ chứa những đơn hàng thỏa mãn
+      điều kiện lọc.
+    </td>
+    <td width="50%">
+      <b>📝 Giải thích ảnh 2:</b><br>
+      Request <code>GET /orders?limit=2</code> trả về hai đơn hàng đầu tiên,
+      có ID <code>1</code> và <code>2</code>. Response trả về
+      <code>200 OK</code>; <code>has_more: true</code> cho biết còn dữ liệu,
+      còn <code>next_cursor</code> được dùng để lấy trang tiếp theo.
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      <img src="./images/lab3(3).png" width="350" alt="Lấy trang tiếp theo bằng cursor">
+    </td>
+    <td align="center">
+      <img src="./images/lab3(4).png" width="350" alt="Lọc orders theo customer_id">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <b>📝 Giải thích ảnh 3:</b><br>
+      Request <code>GET /orders?limit=2&amp;cursor=eyJpZCI6IDJ9</code>
+      dùng <code>next_cursor</code> nhận được ở ảnh 2. Response trả về
+      <code>200 OK</code> với hai đơn hàng tiếp theo, có ID <code>3</code>
+      và <code>4</code>. Server tiếp tục trả <code>next_cursor</code> mới
+      vì <code>has_more: true</code>.
+    </td>
+    <td width="50%">
+      <b>📝 Giải thích ảnh 4:</b><br>
+      Request <code>GET /orders?customer_id=101</code> lọc đơn hàng theo
+      khách hàng có ID <code>101</code>. Response trả về <code>200 OK</code>
+      với hai đơn hàng có ID <code>1</code> và <code>3</code>.
+      <code>has_more: false</code> và <code>next_cursor: null</code>
+      cho biết không còn trang tiếp theo.
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      <img src="./images/lab3(5).png" width="350" alt="Kết hợp lọc status, limit và sparse fieldsets">
+    </td>
+    <td align="center">
+      <img src="./images/lab3(6).png" width="350" alt="Cursor không hợp lệ">
+    </td>
+  </tr> 
+  <tr>
+    <td width="50%">
+      <b>📝 Giải thích ảnh 5:</b><br>
+      Request <code>GET /orders?status=paid&amp;limit=2&amp;fields=id,total</code>
+      kết hợp lọc trạng thái, giới hạn hai kết quả và chọn trường dữ liệu.
+      Response trả về <code>200 OK</code> với hai đơn hàng có ID
+      <code>1</code> và <code>3</code>; mỗi đơn hàng chỉ hiển thị
+      <code>id</code> và <code>total</code>.
+    </td>
+    <td width="50%">
+      <b>📝 Giải thích ảnh 6:</b><br>
+      Request <code>GET /orders?cursor=abc</code> sử dụng cursor không hợp lệ.
+      Server từ chối request và trả về <code>400 Bad Request</code>
+      với thông báo <code>"cursor is invalid"</code>.
+    </td>
+  </tr>
+</table>
