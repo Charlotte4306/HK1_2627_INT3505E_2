@@ -69,6 +69,25 @@ def find_task(task_id):
 #Lấy danh sách task, có thể lọc theo status
 @app.get("/api/v1/tasks")
 def list_tasks():
+    """
+    ---
+    get:
+      tags: [tasks]
+      operationId: listTasks
+      summary: Lấy danh sách task
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [open, in_progress, done]
+      responses:
+        200:
+          description: Danh sách task
+          content:
+            application/json:
+              schema: TaskListSchema
+    """
     status = request.args.get("status")
 
     tasks = TASKS
@@ -83,6 +102,34 @@ def list_tasks():
 #Tạo task mới
 @app.post("/api/v1/tasks")
 def create_task():
+    """
+    ---
+    post:
+      tags: [tasks]
+      operationId: createTask
+      summary: Tạo task mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: TaskSchema
+      responses:
+        201:
+          description: Task vừa tạo
+          content:
+            application/json:
+              schema: TaskSchema
+        415:
+          description: Body không phải JSON
+          content:
+            application/json:
+              schema: ErrorSchema
+        422:
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema: ErrorSchema
+    """
     global next_task_id
 
     if not request.is_json:
@@ -103,6 +150,30 @@ def create_task():
 #Lấy task theo id
 @app.get("/api/v1/tasks/<int:task_id>")
 def get_task(task_id):
+    """
+    ---
+    get:
+      tags: [tasks]
+      operationId: getTaskById
+      summary: Lấy task theo id
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Task tìm thấy
+          content:
+            application/json:
+              schema: TaskSchema
+        404:
+          description: Không tìm thấy task
+          content:
+            application/json:
+              schema: ErrorSchema
+    """
     task = find_task(task_id)
     if task is None:
         return jsonify(error="Task not found"), 404
@@ -112,6 +183,45 @@ def get_task(task_id):
 #Cập nhật một phần task
 @app.patch("/api/v1/tasks/<int:task_id>")
 def patch_task(task_id):
+    """
+    ---
+    patch:
+      tags: [tasks]
+      operationId: patchTask
+      summary: Cập nhật một phần task
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: UpdateTaskSchema
+      responses:
+        200:
+          description: Task sau khi cập nhật
+          content:
+            application/json:
+              schema: TaskSchema
+        404:
+          description: Không tìm thấy task
+          content:
+            application/json:
+              schema: ErrorSchema
+        415:
+          description: Body không phải JSON
+          content:
+            application/json:
+              schema: ErrorSchema
+        422:
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema: ErrorSchema
+    """
     task = find_task(task_id)
     if task is None:
         return jsonify(error="Task not found"), 404
@@ -130,6 +240,27 @@ def patch_task(task_id):
 #Xoá task
 @app.delete("/api/v1/tasks/<int:task_id>")
 def delete_task(task_id):
+    """
+    ---
+    delete:
+      tags: [tasks]
+      operationId: deleteTask
+      summary: Xoá task
+      parameters:
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Xoá thành công, không có body
+        404:
+          description: Không tìm thấy task
+          content:
+            application/json:
+              schema: ErrorSchema
+    """
     task = find_task(task_id)
     if task is None:
         return jsonify(error="Task not found"), 404
