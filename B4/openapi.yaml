@@ -1,0 +1,234 @@
+openapi: 3.0.3
+info:
+  title: Tasks API
+  version: 1.0.0
+paths:
+  /api/v1/tasks:
+    get:
+      tags:
+      - tasks
+      operationId: listTasks
+      summary: Lấy danh sách task
+      parameters:
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - open
+          - in_progress
+          - done
+      responses:
+        '200':
+          description: Danh sách task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskList'
+    post:
+      tags:
+      - tasks
+      operationId: createTask
+      summary: Tạo task mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '201':
+          description: Task vừa tạo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '415':
+          description: Body không phải JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/tasks/{task_id}:
+    get:
+      tags:
+      - tasks
+      operationId: getTaskById
+      summary: Lấy task theo id
+      parameters:
+      - in: path
+        name: task_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Task tìm thấy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Không tìm thấy task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+      - tasks
+      operationId: patchTask
+      summary: Cập nhật một phần task
+      parameters:
+      - in: path
+        name: task_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTask'
+      responses:
+        '200':
+          description: Task sau khi cập nhật
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Không tìm thấy task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: Body không phải JSON
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+      - tasks
+      operationId: deleteTask
+      summary: Xoá task
+      parameters:
+      - in: path
+        name: task_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Xoá thành công, không có body
+        '404':
+          description: Không tìm thấy task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        title:
+          type: string
+          minLength: 1
+          example: Viết spec Tasks API
+        status:
+          type: string
+          default: open
+          enum:
+          - open
+          - in_progress
+          - done
+          example: open
+        priority:
+          type: string
+          default: normal
+          enum:
+          - low
+          - normal
+          - high
+          example: high
+        due_date:
+          type: string
+          format: date
+          default: null
+          example: '2026-10-20'
+          nullable: true
+        assignee_id:
+          type: integer
+          default: null
+          example: 101
+          nullable: true
+      required:
+      - title
+      additionalProperties: false
+    UpdateTask:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          enum:
+          - open
+          - in_progress
+          - done
+        priority:
+          type: string
+          enum:
+          - low
+          - normal
+          - high
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        assignee_id:
+          type: integer
+          nullable: true
+      additionalProperties: false
+    TaskList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+        total:
+          type: integer
+          example: 1
+      additionalProperties: false
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Task not found
+        details:
+          type: object
+          additionalProperties: {}
+      additionalProperties: false
