@@ -1,0 +1,401 @@
+{
+	"info": {
+		"_postman_id": "dccbd356-2488-4cd9-b742-8246d3ce8bc2",
+		"name": "B5 - Books pagination",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Offset - trang 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('200 + strategy offset', () => {",
+							"  pm.response.to.have.status(200);",
+							"  const p = pm.response.json().pagination;",
+							"  pm.expect(p.strategy).to.eql('offset');",
+							"  pm.expect(p.has_next).to.be.true;",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?strategy=offset&offset=0&limit=3",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "strategy",
+							"value": "offset"
+						},
+						{
+							"key": "offset",
+							"value": "0"
+						},
+						{
+							"key": "limit",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Offset - trang 2",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?strategy=offset&offset=3&limit=3",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "strategy",
+							"value": "offset"
+						},
+						{
+							"key": "offset",
+							"value": "3"
+						},
+						{
+							"key": "limit",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cursor - trang đầu",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const p = pm.response.json().pagination;",
+							"pm.test('có next_cursor', () => pm.expect(p.next_cursor).to.be.a('string'));",
+							"pm.collectionVariables.set('next_cursor', p.next_cursor || '');"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?strategy=cursor&limit=3&sort=-price,title",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "strategy",
+							"value": "cursor"
+						},
+						{
+							"key": "limit",
+							"value": "3"
+						},
+						{
+							"key": "sort",
+							"value": "-price,title"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cursor - trang tiếp (dùng next_cursor)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('200', () => pm.response.to.have.status(200));",
+							"pm.collectionVariables.set('next_cursor', pm.response.json().pagination.next_cursor || '');"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?strategy=cursor&limit=3&sort=-price,title&cursor={{next_cursor}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "strategy",
+							"value": "cursor"
+						},
+						{
+							"key": "limit",
+							"value": "3"
+						},
+						{
+							"key": "sort",
+							"value": "-price,title"
+						},
+						{
+							"key": "cursor",
+							"value": "{{next_cursor}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cursor - đổi sort giữa chừng (400)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('400 sort_changed', () => {",
+							"  pm.response.to.have.status(400);",
+							"  pm.expect(pm.response.json().error).to.eql('sort_changed');",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?strategy=cursor&limit=3&sort=price&cursor={{next_cursor}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "strategy",
+							"value": "cursor"
+						},
+						{
+							"key": "limit",
+							"value": "3"
+						},
+						{
+							"key": "sort",
+							"value": "price"
+						},
+						{
+							"key": "cursor",
+							"value": "{{next_cursor}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter genre=novel",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('chỉ có novel', () => {",
+							"  pm.response.json().data.forEach(b => pm.expect(b.category.slug).to.eql('novel'));",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?genre=novel",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "genre",
+							"value": "novel"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Filter genre=tech + cursor",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?strategy=cursor&genre=tech&limit=2&sort=-price,title",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "strategy",
+							"value": "cursor"
+						},
+						{
+							"key": "genre",
+							"value": "tech"
+						},
+						{
+							"key": "limit",
+							"value": "2"
+						},
+						{
+							"key": "sort",
+							"value": "-price,title"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sort multi-key -price,title",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?sort=-price,title&limit=100",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "sort",
+							"value": "-price,title"
+						},
+						{
+							"key": "limit",
+							"value": "100"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sort chiều khác nhau price,-stock",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?sort=price,-stock&limit=100",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "sort",
+							"value": "price,-stock"
+						},
+						{
+							"key": "limit",
+							"value": "100"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lỗi - strategy sai (400)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?strategy=page",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "strategy",
+							"value": "page"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lỗi - sort sai (400)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?sort=author",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "sort",
+							"value": "author"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lỗi - offset âm (400)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}?strategy=offset&offset=-1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "strategy",
+							"value": "offset"
+						},
+						{
+							"key": "offset",
+							"value": "-1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:5000/api/v1/books",
+			"type": "string"
+		},
+		{
+			"key": "next_cursor",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
