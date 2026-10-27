@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/hotel-booking.json",
+  "title": "Hotel Booking API - Resource Schemas",
+  "description": "JSON Schema cho 3 resource chính: Hotel, RoomType, Booking.",
+  "$defs": {
+    "Hotel": {
+      "type": "object",
+      "title": "Hotel",
+      "required": ["name", "address", "city", "star_rating"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^htl_[A-Za-z0-9]+$", "readOnly": true },
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "address": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "city": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "country": { "type": "string", "pattern": "^[A-Z]{2}$", "default": "VN" },
+        "star_rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "phone": { "type": "string", "pattern": "^\\+?[0-9]{8,15}$" },
+        "email": { "type": "string", "format": "email" },
+        "amenities": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["wifi", "pool", "gym", "parking", "breakfast", "spa", "airport_shuttle"] },
+          "uniqueItems": true
+        },
+        "status": { "type": "string", "enum": ["active", "inactive"], "default": "active" },
+        "created_at": { "type": "string", "format": "date-time", "readOnly": true },
+        "updated_at": { "type": "string", "format": "date-time", "readOnly": true }
+      }
+    },
+    "RoomType": {
+      "type": "object",
+      "title": "RoomType",
+      "required": ["hotel_id", "name", "capacity", "price_per_night", "currency", "total_rooms"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^rt_[A-Za-z0-9]+$", "readOnly": true },
+        "hotel_id": { "type": "string", "pattern": "^htl_[A-Za-z0-9]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "bed_type": { "type": "string", "enum": ["single", "double", "twin", "king"] },
+        "capacity": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "area_m2": { "type": "number", "exclusiveMinimum": 0 },
+        "price_per_night": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "default": "VND" },
+        "total_rooms": { "type": "integer", "minimum": 0 },
+        "created_at": { "type": "string", "format": "date-time", "readOnly": true },
+        "updated_at": { "type": "string", "format": "date-time", "readOnly": true }
+      }
+    },
+    "Booking": {
+      "type": "object",
+      "title": "Booking",
+      "required": ["guest_id", "room_type_id", "check_in", "check_out", "num_guests"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^bk_[A-Za-z0-9]+$", "readOnly": true },
+        "guest_id": { "type": "string", "pattern": "^gst_[A-Za-z0-9]+$" },
+        "room_type_id": { "type": "string", "pattern": "^rt_[A-Za-z0-9]+$" },
+        "room_id": { "type": ["string", "null"], "pattern": "^rm_[A-Za-z0-9]+$", "description": "Phòng cụ thể, được gán khi check-in." },
+        "check_in": { "type": "string", "format": "date" },
+        "check_out": { "type": "string", "format": "date", "description": "Phải sau check_in (kiểm tra ở tầng nghiệp vụ)." },
+        "num_guests": { "type": "integer", "minimum": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "confirmed", "checked_in", "checked_out", "cancelled"],
+          "default": "pending",
+          "readOnly": true
+        },
+        "total_amount": { "type": "number", "minimum": 0, "readOnly": true },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "readOnly": true },
+        "special_requests": { "type": "string", "maxLength": 500 },
+        "cancelled_at": { "type": ["string", "null"], "format": "date-time", "readOnly": true },
+        "created_at": { "type": "string", "format": "date-time", "readOnly": true },
+        "updated_at": { "type": "string", "format": "date-time", "readOnly": true }
+      }
+    }
+  }
+}
