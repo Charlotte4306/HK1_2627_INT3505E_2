@@ -1,4 +1,10 @@
-from marshmallow import Schema, fields, validate
+from marshmallow import (
+    Schema, 
+    ValidationError,
+    fields, 
+    validate,
+    validates_schema,
+)
 
 #Body tạo sản phẩm
 class ProductInSchema(Schema):
@@ -75,3 +81,55 @@ class ProductPageSchema(Schema):
     size = fields.Int()
     total = fields.Int()
     
+# Một dòng hàng trong body tạo đơn
+class OrderItemInSchema(Schema):
+    product_id = fields.Int(
+        required=True,
+        strict=True,
+        validate=validate.Range(min=1),
+    )
+    
+    qty = fields.Int(
+        required=True,
+        strict=True,
+        validate=validate.Range(min=1),
+    )
+    
+# Body tạo đơn hàng
+class OrderInSchema(Schema):
+    items = fields.List(
+        fields.Nested(OrderItemInSchema),
+        required=True,
+        validate=validate.Length(min=1, max=100),
+    )
+    @validates_schema
+    def validate_unique_products(self, data, **kwargs):
+        product_ids = [
+            item["product_id"]
+            for item in data["items"]
+        ]
+        if len(product_ids) != len(set(product_ids)):
+            raise ValidationError({
+                "items": [
+                    "Each product must appear only once."
+                ]
+            })
+            
+# Dữ liệu một dòng hàng trả về
+class OrderItemSchema(Schema):
+    id = fields.Int()
+    product_id = fields.Int()
+    qty = fields.Int()
+    unit_price_cents = fields.Int()
+    product = fields.Nested(
+        ProductSchema,
+        only=("id", "sku", "name"),
+    )
+    
+# Dữ liệu đơn hàng trả về
+class OrderSchema(Schema):
+    id = fields.Int()
+    created_at = fields.DateTime()
+    items = fields.List(
+        fields.Nested(OrderItemSchema)
+    )
