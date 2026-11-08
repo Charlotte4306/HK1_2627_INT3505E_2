@@ -15,6 +15,8 @@ dependencies = [
     "flask-smorest>=0.47,<0.48",
     "marshmallow>=4,<5",
     "Flask-Migrate>=4,<5",
+    "psycopg[binary]>=3.2,<4",
+    "gunicorn>=23,<24",
 ]
 
 [tool.setuptools.packages.find]
