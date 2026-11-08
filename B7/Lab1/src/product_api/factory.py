@@ -3,6 +3,7 @@ from flask_smorest import Api
 
 from .api.products import bp as products_bp
 from .api.orders import bp as orders_bp
+from .api.health import bp as health_bp
 from .config import DefaultConfig
 from .errors import register_error_handlers
 from .extensions import db, migrate
@@ -23,6 +24,8 @@ def create_app(config=None):
     api = Api(app)
     api.register_blueprint(products_bp)
     api.register_blueprint(orders_bp)
+    
+    app.register_blueprint(health_bp)
     # Đăng ký sau Api để sử dụng định dạng lỗi của bài
     register_error_handlers(app)
     return app
