@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "product-api"
+version = "1.0.0"
+description = "Lab 1 - Product CRUD API"
+requires-python = ">=3.10"
+
+dependencies = [
+    "Flask>=3.1,<4",
+    "Flask-SQLAlchemy>=3.1,<4",
+    "SQLAlchemy>=2.0,<2.1",
+    "flask-smorest>=0.47,<0.48",
+    "marshmallow>=4,<5",
+    "Flask-Migrate>=4,<5",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

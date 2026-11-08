@@ -1,0 +1,29 @@
+# Virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Build output
+build/
+dist/
+
+# Cấu hình môi trường cục bộ
+.env
+.env.*
+
+# Giữ lại file cấu hình mẫu
+!.env.example
+
+# Database SQLite và dữ liệu instance
+instance/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Cache kiểm thử
+.pytest_cache/
