@@ -67,20 +67,47 @@ spectral lint openapi.yaml --ruleset .spectral.yml
 
 ## 4. Lab 3 — Postman/Newman
 
-File `books-api.postman_collection.json` chứa 5 happy-path requests chạy theo thứ tự: list → create → get → update → delete. Request tạo lưu `book_id` trong collection variables. Hãy:
+Collection `books-api.postman_collection.json` có 7 request chạy theo thứ tự:
 
-- Tạo folder `error-cases/` với **POST /books** thiếu `title` và **GET /books/9999**.
-- Thêm **ít nhất 2 `pm.test` cho mỗi error request**: HTTP status và JSON `code`/`message`.
-- Chạy bằng Newman, lưu JUnit report.
+- Folder `books`: list → create → get → update → delete (5 happy paths).
+- Folder `error-cases`: POST thiếu `title` → 400; GET `/books/9999` → 404.
 
-```bash
-npm install -g newman
-newman run books-api.postman_collection.json \
-  -e postman/local.postman_environment.json \
-  -r cli,junit --reporter-junit-export reports/junit.xml
+Mỗi request có 2 `pm.test`: kiểm tra HTTP status và body. Hai request lỗi kiểm tra đúng `code`/`message`; POST thiếu title còn kiểm tra `errors` có field `title`. HTTP 400/404 đúng mong đợi vẫn là test PASS.
+
+POST thành công lưu ID bằng `pm.collectionVariables.set("book_id", ...)`; GET/PUT/DELETE dùng `{{book_id}}`. Không cần đặt ID thủ công. File `postman/books-api.postman_collection.json` là bản sao đồng bộ để import vào Postman.
+
+### Chạy trên Windows PowerShell
+
+Yêu cầu: Node.js, môi trường Python đã cài `requirements.txt`. Mở các terminal tại B8. Environment `postman/local.postman_environment.json` chứa `base_url` trỏ tới `http://127.0.0.1:5000`.
+
+Terminal 1 — bật API (nếu đã chạy thì dùng server hiện tại):
+
+```powershell
+New-Item -ItemType Directory -Force instance
+python -m app --port 5000
 ```
 
-Lưu ý: cần chạy server trước. `data.csv` là dữ liệu ví dụ để thực hành data-driven iteration; khi sử dụng `-d data.csv`, collection sẽ lặp theo số hàng. Đừng hard-code credentials/tokens trong file đẩy lên Git.
+Terminal 2 — cài Newman một lần rồi chạy collection:
+
+```powershell
+npm.cmd install -g newman
+New-Item -ItemType Directory -Force reports
+newman.cmd run books-api.postman_collection.json -e postman/local.postman_environment.json -r "cli,junit" --reporter-junit-export reports/junit.xml
+```
+
+PowerShell cần dấu nháy quanh `"cli,junit"`. Chạy lệnh trên một dòng, không thêm dấu `\` cuối dòng. Không cần mở Postman UI. Không chạy đồng thời nhiều bản collection trên cùng DB. Dùng database thực hành không có sách ID 9999; không xóa dữ liệu đang có chỉ để chạy test.
+
+Kết quả đạt: 7 request, 14 assertion, 0 failure, thời gian collection dưới 10 giây. Nộp `reports/junit.xml` và chụp terminal để minh chứng. Report hiện có 14 testcase, mỗi assertion là một testcase. Không cần sửa Flask hay viết pytest cho Lab 3.
+
+Đếm testcase và lỗi trong JUnit:
+
+```powershell
+[xml]$lab3Report = Get-Content reports/junit.xml -Raw
+$lab3Report.SelectNodes("//testcase").Count
+$lab3Report.SelectNodes("//failure | //error").Count
+```
+
+`data.csv` dùng cho thực hành thêm data-driven iteration; không cần `-d data.csv` trong lần chạy 7 request này.
 
 ## 5. Lab 4 — Locust
 
