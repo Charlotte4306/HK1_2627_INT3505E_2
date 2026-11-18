@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: API người dùng — B9 Lab 1
+  version: 1.0.0
+  description: API người dùng phân phiên bản theo đường dẫn URL. Hai phiên bản dùng chung dữ liệu lưu trong bộ nhớ.
+servers:
+  - url: http://127.0.0.1:5000
+  - url: http://127.0.0.1:5001
+paths:
+  /api/v1/users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      operationId: getUserV1
+      summary: Lấy thông tin người dùng với họ và tên gộp trong full_name.
+      deprecated: true
+      responses:
+        '200':
+          description: Tìm thấy người dùng.
+          headers:
+            Sunset:
+              $ref: '#/components/headers/Sunset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV1'
+        '404':
+          description: Không tìm thấy người dùng.
+          headers:
+            Sunset:
+              $ref: '#/components/headers/Sunset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: {error: nf}
+  /api/v2/users:
+    post:
+      operationId: createUserV2
+      summary: Tạo người dùng với tên và họ ở hai trường riêng.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+            example:
+              first_name: An
+              last_name: Trần
+              email: an@example.com
+      responses:
+        '201':
+          description: Tạo người dùng thành công.
+          headers:
+            Location:
+              description: Đường dẫn tương đối đến người dùng vừa tạo trên API v2.
+              schema: {type: string}
+              example: /api/v2/users/3
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV2'
+        '400':
+          description: Dữ liệu người dùng bị thiếu, sai định dạng hoặc không hợp lệ.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v2/users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      operationId: getUserV2
+      summary: Lấy thông tin người dùng với tên và họ ở hai trường riêng.
+      responses:
+        '200':
+          description: Tìm thấy người dùng.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserV2'
+        '404':
+          description: Không tìm thấy người dùng.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example: {error: nf}
+components:
+  parameters:
+    UserId:
+      name: id
+      in: path
+      required: true
+      schema: {type: integer, minimum: 0}
+  headers:
+    Sunset:
+      description: Thời điểm dự kiến ngừng hỗ trợ v1 theo định dạng HTTP-date. Có thể đổi bằng LAB1_V1_SUNSET_DATE.
+      schema: {type: string}
+      example: 'Fri, 01 Jan 2027 00:00:00 GMT'
+  schemas:
+    UserV1:
+      type: object
+      required: [id, full_name, email]
+      properties:
+        id: {type: integer}
+        full_name: {type: string}
+        email: {type: string}
+    UserV2:
+      type: object
+      required: [id, first_name, last_name, email]
+      properties:
+        id: {type: integer}
+        first_name: {type: string}
+        last_name: {type: string}
+        email: {type: string}
+    UserInput:
+      type: object
+      additionalProperties: false
+      required: [first_name, last_name, email]
+      properties:
+        first_name: {type: string, pattern: '\S'}
+        last_name: {type: string, pattern: '\S'}
+        email:
+          type: string
+          description: Khoảng trắng ở đầu và cuối địa chỉ email được loại bỏ trước khi kiểm tra.
+          pattern: '^\s*[^\s@]+@[^\s@]+\.[^\s@]+\s*$'
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: {type: string}

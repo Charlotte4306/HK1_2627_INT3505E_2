@@ -1,8 +1,14 @@
-from flask import Blueprint
+from flask import Blueprint, current_app
 
 from .users_data import get_user
 
 bp = Blueprint("v1", __name__)
+
+
+@bp.after_request
+def add_sunset_header(response):
+    response.headers["Sunset"] = current_app.config["V1_SUNSET"]
+    return response
 
 
 @bp.get("/<int:uid>")
